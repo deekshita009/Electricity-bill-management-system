@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Electricity Bill Payment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Google Font & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --blue: #1e3a8a;
+      --light-blue: #e0f2ff;
+      --white: #ffffff;
+      --gray: #f3f4f6;
+      --dark-blue: #163e9e;
+      --border-radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--gray);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+      color: var(--blue);
+    }
+
+    .container {
+      background-color: var(--white);
+      padding: 40px 35px 35px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .header h2 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 2rem;
+      margin-bottom: 30px;
+    }
+
+    .icon {
+      font-size: 2.4rem;
+      color: var(--blue);
+    }
+
+    .toggle-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .toggle-buttons button {
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 1rem;
+      border-radius: var(--border-radius);
+      border: 2px solid var(--blue);
+      background-color: transparent;
+      color: var(--blue);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      max-width: 160px;
+      user-select: none;
+    }
+
+    .toggle-buttons button:hover:not(.active) {
+      background-color: var(--light-blue);
+    }
+
+    .toggle-buttons button.active {
+      background-color: var(--blue);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(30, 58, 138, 0.4);
+      border-color: var(--blue);
+    }
+
+    .payment-section {
+      display: none;
+      text-align: left;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .payment-section.active {
+      display: block;
+    }
+
+    .qr-section img {
+      display: block;
+      margin: 0 auto 20px;
+      max-width: 220px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(30, 58, 138, 0.1);
+    }
+
+    .qr-section p {
+      font-size: 1rem;
+      color: #555;
+      text-align: center;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    .upi-section input {
+      width: 100%;
+      padding: 14px 15px;
+      margin-bottom: 18px;
+      border: 1.8px solid #ccc;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      color: var(--blue);
+      transition: border-color 0.25s ease;
+    }
+
+    .upi-section input:focus {
+      border-color: var(--blue);
+      outline: none;
+      box-shadow: 0 0 6px var(--light-blue);
+    }
+
+    .download-btn {
+      display: block;
+      width: 100%;
+      padding: 14px 0;
+      margin-top: 30px;
+      background-color: var(--blue);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+
+    .download-btn:hover {
+      background-color: var(--dark-blue);
+      box-shadow: 0 6px 20px rgba(22, 62, 158, 0.5);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 30px 20px 25px;
+      }
+
+      .header h2 {
+        font-size: 1.6rem;
+      }
+
+      .toggle-buttons {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .toggle-buttons button {
+        max-width: 100%;
+        flex: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" role="main" aria-label="Electricity Bill Payment">
+  <div class="header">
+    <h2><span class="icon" aria-hidden="true">⚡</span> Electricity Bill Payment</h2>
+  </div>
+
+  <div class="toggle-buttons" role="tablist" aria-label="Payment Methods">
+    <button id="btn-qr" class="active" onclick="showSection('qr')" role="tab" aria-selected="true" aria-controls="section-qr" tabindex="0">
+      Pay via QR
+    </button>
+    <button id="btn-upi" onclick="showSection('upi')" role="tab" aria-selected="false" aria-controls="section-upi" tabindex="-1">
+      Pay via UPI
+    </button>
+  </div>
+
+  <!-- QR Code Section -->
+  <section id="section-qr" class="payment-section active qr-section" role="tabpanel" aria-labelledby="btn-qr" tabindex="0">
+    <img src="qr.png" alt="QR Code for payment" />
+    <p>Scan this QR code using any UPI app to make the payment.</p>
+  </section>
+
+  <!-- UPI Payment Section -->
+  <section id="section-upi" class="payment-section upi-section" role="tabpanel" aria-labelledby="btn-upi" tabindex="0" aria-hidden="true">
+    <input type="text" id="payer-name" placeholder="Your Name" required aria-label="Your Name" />
+    <input type="text" id="upi-id" placeholder="Your UPI ID (e.g. name@upi)" required aria-label="Your UPI ID" />
+    <input type="number" id="amount" placeholder="Amount (₹)" required aria-label="Amount in rupees" min="0" step="0.01" />
+  </section>
+
+  <button class="download-btn" onclick="downloadPDF()" aria-label="Download payment receipt as PDF">
+    Download Receipt
+  </button>
+</div>
+
+<script>
+  function showSection(method) {
+    const qrBtn = document.getElementById('btn-qr');
+    const upiBtn = document.getElementById('btn-upi');
+    const qrSection = document.getElementById('section-qr');
+    const upiSection = document.getElementById('section-upi');
+
+    if (method === 'qr') {
+      qrBtn.classList.add('active');
+      qrBtn.setAttribute('aria-selected', 'true');
+      qrBtn.setAttribute('tabindex', '0');
+
+      upiBtn.classList.remove('active');
+      upiBtn.setAttribute('aria-selected', 'false');
+      upiBtn.setAttribute('tabindex', '-1');
+
+      qrSection.classList.add('active');
+      qrSection.removeAttribute('aria-hidden');
+      qrSection.focus();
+
+      upiSection.classList.remove('active');
+      upiSection.setAttribute('aria-hidden', 'true');
+    } else {
+      upiBtn.classList.add('active');
+      upiBtn.setAttribute('aria-selected', 'true');
+      upiBtn.setAttribute('tabindex', '0');
+
+      qrBtn.classList.remove('active');
+      qrBtn.setAttribute('aria-selected', 'false');
+      qrBtn.setAttribute('tabindex', '-1');
+
+      upiSection.classList.add('active');
+      upiSection.removeAttribute('aria-hidden');
+      upiSection.focus();
+
+      qrSection.classList.remove('active');
+      qrSection.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const method = document.getElementById('btn-qr').classList.contains('active') ? 'QR Code' : 'UPI';
+    let details = `Electricity Bill Receipt\n\nPayment Method: ${method}\n`;
+
+    if (method === 'UPI') {
+      const name = document.getElementById('payer-name').value.trim() || 'N/A';
+      const upi = document.getElementById('upi-id').value.trim() || 'N/A';
+      const amount = document.getElementById('amount').value.trim() || '0.00';
+      details += `Name: ${name}\nUPI ID: ${upi}\nAmount: ₹${amount}\n`;
+    }
+
+    details += `Date: ${new Date().toLocaleString()}\n\nThank you for your payment!`;
+
+    doc.setFontSize(16);
+    doc.setTextColor(30, 58, 138);
+    doc.text(details, 20, 30);
+    doc.save("Electricity_Bill_Receipt.pdf");
+  }
+</script>
+
+</body>
+</html>
